@@ -6,17 +6,21 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
-    @State private var friends: [Friend] = [
+    @Query private var friends: [Friend] = [
         Friend(name: "Dhriti", birthday: .now),
         Friend(name: "Hana", birthday: Date(timeIntervalSince1970: 0))
     ]
+    @Environment(\.modelContext) private var context
+    
+    
     @State private var newName = ""
     @State private var newBirthday = Date.now
     var body: some View {
         NavigationStack {
-            List(friends, id: \.name) { friend in
+            List(friends) { friend in
                 HStack {
                     Text(friend.name)
                     Spacer()
@@ -30,13 +34,18 @@ struct ContentView: View {
                         .font(.headline)
                     DatePicker(selection: $newBirthday, in: Date.distantPast...Date.now, displayedComponents: .date) {
                         TextField("Name", text: $newName)
+                    }
                             .textFieldStyle(.roundedBorder)
+                    Button ("Save") {
+                        let newFriend = Friend(name: newName, birthday: newBirthday)
+                        context.insert(newFriend)
+                        newName = ""
+                        newBirthday = .now
                     }
-                    Button {
-                        
-                    }
-                    .padding()
+                    
+                    .bold()
                 } //Vstack
+                .padding(.all)
             } //safeArea
             
         } //Navigation
@@ -46,4 +55,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .modelContainer(for: Friend.self, inMemory: true)
 }
